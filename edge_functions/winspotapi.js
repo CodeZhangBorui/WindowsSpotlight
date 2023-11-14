@@ -10,7 +10,7 @@ export default async function (request) {
                 method: "GET",
             });
             const resp = new Response(
-                await res.text,
+                await res.text(),
                 {
                     status: 200,
                 }
