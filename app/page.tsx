@@ -82,7 +82,7 @@ const Home = () => {
             <Link
               isExternal
               showAnchorIcon
-              href={data['ad']['hs2_destination_url']['u'].replace('microsoft-edge:', '')}
+              href={String(data['ad']['hs2_destination_url']['u']).replace('microsoft-edge:', '')}
             >
               探索更多
             </Link>
