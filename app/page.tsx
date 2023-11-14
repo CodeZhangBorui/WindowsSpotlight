@@ -19,7 +19,7 @@ const Home = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "https://arc.msn.com/v3/Delivery/Placement?pid=338387&fmt=json&cdm=1&pl=zh-CN&lc=zh-CN&ctry=CN"
+          "/winspotapi"
         );
         const resp = response.data.batchrsp.items[0].item;
         const parsedData = JSON.parse(resp);
