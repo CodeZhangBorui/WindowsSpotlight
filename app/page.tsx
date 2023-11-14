@@ -8,7 +8,8 @@ import {
   CardBody,
   CardFooter,
   Divider,
-  Link
+  Link,
+  Skeleton
 } from "@nextui-org/react";
 import axios from "axios";
 
@@ -25,7 +26,16 @@ const Home = () => {
         const parsedData = JSON.parse(resp);
         setData(parsedData);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        try {
+          const response = await axios.get(
+            "https://arc.msn.com/v3/Delivery/Placement?pid=338387&fmt=json&cdm=1&pl=zh-CN&lc=zh-CN&ctry=CN"
+          );
+          const resp = response.data.batchrsp.items[0].item;
+          const parsedData = JSON.parse(resp);
+          setData(parsedData);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
       }
     };
 
