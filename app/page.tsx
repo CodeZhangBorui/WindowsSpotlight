@@ -11,10 +11,12 @@ import {
   Link,
   Skeleton
 } from "@nextui-org/react";
+import { Cookies } from "react-cookie";
 import axios from "axios";
 
 const Home = () => {
-  const [data, setData] = useState(null);
+  const [spotlightData, setSpotlightData] = useState(null);
+  const [showState, setShowState] = useState({"showCalendar": false, "showInfo": true});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,7 +26,7 @@ const Home = () => {
         );
         const resp = response.data.batchrsp.items[0].item;
         const parsedData = JSON.parse(resp);
-        setData(parsedData);
+        setSpotlightData(parsedData);
       } catch (error) {
         try {
           const response = await axios.get(
@@ -32,21 +34,41 @@ const Home = () => {
           );
           const resp = response.data.batchrsp.items[0].item;
           const parsedData = JSON.parse(resp);
-          setData(parsedData);
+          setSpotlightData(parsedData);
         } catch (error) {
           console.error("Error fetching data:", error);
         }
       }
     };
+    
+    const fetchSettings = async () => {
+      const cookies = new Cookies();
+      let showCalendar = cookies.get("showCalendar");
+      let showInfo = cookies.get("showInfo");
+      let preferences = {"showCalendar": showCalendar, "showInfo": showInfo};
+      console.log(preferences);
+      
+      if (showCalendar === undefined) {
+        preferences["showCalendar"] = false;
+        cookies.set("showCalendar", false, { path: "/" });
+      }
+      if(showInfo === undefined) {
+        preferences["showInfo"] = true;
+        cookies.set("showInfo", true, { path: "/" });
+      }
+
+      setShowState(preferences);
+    }
 
     // Only fetch data on the client side, not during server-side rendering
     if (typeof window !== "undefined") {
       fetchData();
+      fetchSettings();
     }
   }, []);
 
   const downloadImage = () => {
-    const imageUrl = data?.['ad']['image_fullscreen_001_landscape']['u'];
+    const imageUrl = spotlightData?.['ad']['image_fullscreen_001_landscape']['u'];
 
     if (imageUrl) {
       fetch(imageUrl)
@@ -55,7 +77,7 @@ const Home = () => {
           const url = window.URL.createObjectURL(new Blob([blob]));
           const link = document.createElement("a");
           link.href = url;
-          link.setAttribute("download", `${data['ad']['title_text']['tx']}.jpg`);
+          link.setAttribute("download", `${spotlightData['ad']['title_text']['tx']}.jpg`);
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
@@ -68,35 +90,35 @@ const Home = () => {
 
   return (
     <div className="relative h-screen flex items-center justify-center">
-      {data && (
+      {spotlightData && (
         <img
           className="object-cover w-full h-full absolute inset-0"
-          src={data['ad']['image_fullscreen_001_landscape']['u']}
+          src={spotlightData['ad']['image_fullscreen_001_landscape']['u']}
         />
       )}
-      {data && (
+      {spotlightData && showState["showInfo"] &&  (
         <Card className="max-w-[400px] absolute bottom-4 right-4">
           <CardHeader className="flex gap-3">
             <div className="flex flex-col">
-              <p className="text-md">{data['ad']['title_text']['tx']}</p>
-              <p className="text-small text-default-500">{data['ad']['copyright_text']['tx']}</p>
+              <p className="text-md">{spotlightData['ad']['title_text']['tx']}</p>
+              <p className="text-small text-default-500">{spotlightData['ad']['copyright_text']['tx']}</p>
             </div>
           </CardHeader>
           <Divider />
           <CardBody>
-            <p>{data['ad']['hs1_title_text']['tx']}</p>
-            <p className="text-small text-default-500">{data['ad']['hs1_cta_text']['tx']}</p>
+            <p>{spotlightData['ad']['hs1_title_text']['tx']}</p>
+            <p className="text-small text-default-500">{spotlightData['ad']['hs1_cta_text']['tx']}</p>
           </CardBody>
           <Divider />
           <CardFooter>
             <Link
               isExternal
               showAnchorIcon
-              href={String(data['ad']['hs2_destination_url']['u']).replace('microsoft-edge:', '')}
+              href={String(spotlightData['ad']['hs2_destination_url']['u']).replace('microsoft-edge:', '')}
             >
               探索更多
             </Link>
-            <Button onClick={downloadImage}>下载图片</Button>
+            <Button onPress={downloadImage}>下载图片</Button>
           </CardFooter>
         </Card>
       )}
